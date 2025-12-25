@@ -1,0 +1,178 @@
+12.25 11:05
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Craft Master Animation Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+body{
+background:#111;
+color:white;
+overflow:hidden;
+text-align:center;
+}
+
+/* LOADING */
+#loading{
+position:fixed;
+width:100%;
+height:100%;
+background:#000;
+display:flex;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+z-index:10;
+}
+#loading h1{
+font-size:28px;
+animation:blink 1s infinite;
+}
+@keyframes blink{
+0%{opacity:0.2}
+50%{opacity:1}
+100%{opacity:0.2}
+}
+
+/* HOME */
+#home{
+display:none;
+padding-top:100px;
+}
+button{
+padding:15px 30px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#0ff;
+margin:10px;
+}
+
+/* GAME */
+#game{
+display:none;
+}
+canvas{
+background:#222;
+display:block;
+margin:auto;
+border:2px solid #0ff;
+}
+#info{
+margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading">
+<h1>Craft Master Animation Studio</h1>
+<p>Loading...</p>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="home">
+<h1>CRAFT MASTER</h1>
+<p>Geometry Dash Style Game</p>
+<button onclick="startGame()">PLAY</button>
+<button onclick="alert('More modes coming soon')">MODES</button>
+<button onclick="alert('Settings default')">SETTINGS</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game">
+<canvas id="canvas" width="360" height="500"></canvas>
+<div id="info">
+<p>Tap = Jump | Double Tap = Double Jump | Hold = Triple Jump</p>
+<p id="score">Score: 0</p>
+</div>
+</div>
+
+<audio id="music" src="music.mp3" loop></audio>
+
+<script>
+/* LOADING */
+setTimeout(()=>{
+document.getElementById("loading").style.display="none";
+document.getElementById("home").style.display="block";
+},3000);
+
+/* GAME LOGIC */
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let player={x:50,y:400,w:30,h:30,vy:0,jumps:0};
+let blocks=[];
+let gravity=0.6;
+let score=0;
+let running=false;
+
+function startGame(){
+document.getElementById("home").style.display="none";
+document.getElementById("game").style.display="block";
+document.getElementById("music").play();
+running=true;
+blocks=[];
+score=0;
+loop();
+}
+
+function spawnBlock(){
+blocks.push({x:360,y:420,w:30,h:80});
+}
+
+setInterval(()=>{if(running)spawnBlock()},1500);
+
+canvas.addEventListener("touchstart",()=>{
+if(player.jumps<3){
+player.vy=-10;
+player.jumps++;
+}
+});
+
+function loop(){
+if(!running)return;
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+/* Player */
+player.vy+=gravity;
+player.y+=player.vy;
+if(player.y>400){
+player.y=400;
+player.vy=0;
+player.jumps=0;
+}
+ctx.fillStyle="#0ff";
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+/* Blocks */
+ctx.fillStyle="red";
+for(let i=0;i<blocks.length;i++){
+blocks[i].x-=4;
+ctx.fillRect(blocks[i].x,blocks[i].y,blocks[i].w,blocks[i].h);
+
+/* Collision */
+if(player.x < blocks[i].x+blocks[i].w &&
+player.x+player.w > blocks[i].x &&
+player.y < blocks[i].y+blocks[i].h &&
+player.y+player.h > blocks[i].y){
+alert("GAME OVER");
+location.reload();
+}
+}
+
+/* Score */
+score++;
+document.getElementById("score").innerText="Score: "+score;
+
+requestAnimationFrame(loop);
+}
+</script>
+
+</body>
+</html>
